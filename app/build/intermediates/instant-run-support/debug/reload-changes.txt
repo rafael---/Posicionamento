@@ -1,0 +1,3 @@
+CHANGED,/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/instantRun/debug/folders/4000/5/enhanced/br/edu/uffs/posicionamento/MainActivity$override.class
+CHANGED,/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/instantRun/debug/folders/4000/5/enhanced/br/edu/uffs/posicionamento/MainActivity$Comparador$override.class
+CHANGED,/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/instantRun/debug/folders/4000/5/enhanced/com/android/tools/fd/runtime/AppPatchesLoaderImpl.class
