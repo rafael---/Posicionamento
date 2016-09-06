@@ -4,12 +4,12 @@
     api-level="23"
     density="xhdpi"
     format="7"
-    timestamp="13638161664844"
+    timestamp="34555579757819"
     token="-9032569181926328597" >
 
     <task
         name="javac"
-        duration="0" />
+        duration="93" />
     <task
         name="instant-run-dex"
         duration="0" />
@@ -24,22 +24,22 @@
         location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_2/classes.dex"
         type="DEX" />
 
-    <build timestamp="7158146971903" >
+    <build timestamp="33890645727370" >
         <artifact
             location="/home/rafael/Documentos/Posicionamento/app/build/outputs/apk/app-debug.apk"
             type="MAIN" />
     </build>
-    <build timestamp="12392560138722" >
+    <build timestamp="34127629514663" >
         <artifact
             location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_4/classes.dex"
             type="DEX" />
     </build>
-    <build timestamp="12571628147732" >
+    <build timestamp="34499335437321" >
         <artifact
             location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/res/resources-debug.ap_"
             type="RESOURCES" />
     </build>
-    <build timestamp="13638161664844" >
+    <build timestamp="34555579757819" >
         <artifact
             location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_2/classes.dex"
             type="DEX" />

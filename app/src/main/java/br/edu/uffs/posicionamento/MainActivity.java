@@ -14,6 +14,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -23,30 +27,18 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    public final static String[] strAps = {"44:ad:d9:e5:36:d0", "0c:27:24:8e:bb:40", "44:ad:d9:e5:5f:40"};
 
     private List<Local> locais;
 
-    private int qtdLocais;
-    private double erroAcumuladoKNN;
-    private double erroAcumuladoKWNN;
     private Conexao conexao;
     private Spinner dropdown;
     DecimalFormat decimalFormat;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        qtdLocais = 0;
-        erroAcumuladoKWNN = 0.;
-        erroAcumuladoKNN = 0.;
-
-        dropdown = (Spinner)findViewById(R.id.spinner);
-        String[] items = new String[]{"2", "3", "4", "5"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
-        dropdown.setAdapter(adapter);
 
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
         decimalFormat = (DecimalFormat)nf;
@@ -54,17 +46,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class Comparador implements Comparator<Local>  {
+        private Local localBase;
+
+        Comparador(Local base)  {
+            this.localBase = base;
+        }
+
         @Override
         public int compare(Local lhs, Local rhs) {
-            if(lhs.getDistancia() > rhs.getDistancia())
-                return -1;
-            if(lhs.getDistancia() == rhs.getDistancia())
-                return 0;
-            return 1;
+            double a = localBase.calcularDistancia(lhs), b = localBase.calcularDistancia(rhs);
+            return (a > b)? 1 : (a == b)? 0 : -1;
         }
     }
 
-    public void obterPosicao(View v)    {
+    public void obterPosicao(View v)   {
         if(locais == null || conexao == null)  {
             Toast.makeText(getApplicationContext(), "Por favor, sincronize o aplicativo com o servidor", Toast.LENGTH_SHORT).show();
             return;
@@ -74,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        EditText localCorretoX = (EditText) findViewById(R.id.editText);
+        EditText localCorretoY = (EditText) findViewById(R.id.editText2);
+
         WifiManager wifiMgr = (WifiManager) getSystemService(WIFI_SERVICE);
 
         Local localAtual = new Local();
@@ -81,36 +79,64 @@ public class MainActivity extends AppCompatActivity {
         List<ScanResult> listAPs = wifiMgr.getScanResults();
 
         for(ScanResult sc : listAPs)
-            localAtual.addAp(sc.BSSID, sc.level);
+            for(String s : strAps)
+                if(sc.BSSID.equals(s))
+                    localAtual.addAp(sc.BSSID, sc.level);
 
-        String msg = "";
-
-        for(Local l : locais)   {
-            double x = l.getCoordX();
-            double y = l.getCoordY();
-            double distancia = localAtual.calcularDistancia(l);
-
-            msg += "("+x+", "+y+") -> " + distancia + "\n";
-        }
-
-        Comparador comparador = new Comparador();
+        Comparador comparador = new Comparador(localAtual);
         Collections.sort(locais, comparador);
 
-        int K = Integer.valueOf(dropdown.getSelectedItem().toString());
+        String strSync = "data=";
 
-        Pair<Double, Double> knnDist = kNN(K);
-        Pair<Double, Double> kwnnDist = kWNN(K);
+        try {
+            for (Local l : locais) {
+                JSONObject json = new JSONObject();
 
-        TextView txt1 = (TextView) findViewById(R.id.textView);
-        TextView txt2 = (TextView) findViewById(R.id.textView2);
+                json.put("x", l.getCoordX());
+                json.put("y", l.getCoordY());
+                json.put("distancia", localAtual.calcularDistancia(l));
 
-        String txt2NN = "Posição KNN (" + decimalFormat.format(knnDist.first) + ", " + decimalFormat.format(knnDist.second) + ")";
-        String txt2WNN = "Posição KWNN (" + decimalFormat.format(kwnnDist.first) + ", " + decimalFormat.format(kwnnDist.second) + ")";
+                try {
+                    float cx = Float.valueOf(localCorretoX.getText().toString());
+                    float cy = Float.valueOf(localCorretoY.getText().toString());
+                    json.put("correct_x", cx);
+                    json.put("correct_y", cy);
+                } catch(NumberFormatException ignored)    {}
 
-        txt1.setText(txt2NN);
-        txt2.setText(txt2WNN);
+                strSync += "$" + json.toString();
+            }
 
-        Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_LONG).show();
+        } catch (JSONException e)   {
+            Toast.makeText(getApplicationContext(),"Erro ao criar objeto JSON",Toast.LENGTH_LONG).show();
+        }
+
+        try {
+            Sincronizacao sincronizacao = new Sincronizacao(getApplicationContext());
+            sincronizacao.execute("http://dadosuffscco.site88.net/sync_measures.php",strSync);
+        } catch (NullPointerException e)    {
+            Toast.makeText(getApplicationContext(),"Objeto Nulo",Toast.LENGTH_LONG).show();
+        }
+
+        Pair<Double, Double> knnDist3 = kNN(3);
+        Pair<Double, Double> kwnnDist3 = kWNN(localAtual, 3);
+        Pair<Double, Double> knnDist4 = kNN(4);
+        Pair<Double, Double> kwnnDist4 = kWNN(localAtual, 4);
+
+        TextView txt3NN = (TextView) findViewById(R.id.textView);
+        TextView txt3WNN = (TextView) findViewById(R.id.textView2);
+        TextView txt4NN = (TextView) findViewById(R.id.textView5);
+        TextView txt4WNN = (TextView) findViewById(R.id.textView6);
+
+        String str3NN = "Posição 3NN (" + decimalFormat.format(knnDist3.first) + ", " + decimalFormat.format(knnDist3.second) + ")";
+        String str3WNN = "Posição 3WNN (" + decimalFormat.format(kwnnDist3.first) + ", " + decimalFormat.format(kwnnDist3.second) + ")";
+
+        String str4NN = "Posição 4NN (" + decimalFormat.format(knnDist4.first) + ", " + decimalFormat.format(knnDist4.second) + ")";
+        String str4WNN = "Posição 4WNN (" + decimalFormat.format(kwnnDist4.first) + ", " + decimalFormat.format(kwnnDist4.second) + ")";
+
+        txt3NN.setText(str3NN);
+        txt3WNN.setText(str3WNN);
+        txt4NN.setText(str4NN);
+        txt4WNN.setText(str4WNN);
     }
 
     public Pair<Double,Double> kNN(final int K)  {
@@ -122,12 +148,13 @@ public class MainActivity extends AppCompatActivity {
         return new Pair<>(x,y);
     }
 
-    public Pair<Double, Double> kWNN(final int K)   {
+    public Pair<Double, Double> kWNN(Local localAtual, final int K)   {
         double x = 0., y = 0.;
         final double EPS = 10e-4;
         for(int i = 0; i < K; i++)  {
-            x += 1./(locais.get(i).getDistancia() + EPS) * locais.get(i).getCoordX();
-            y += 1./(locais.get(i).getDistancia() + EPS) * locais.get(i).getCoordY();
+            Local temp = locais.get(i);
+            x += 1./(localAtual.calcularDistancia(temp) + EPS) * temp.getCoordX();
+            y += 1./(localAtual.calcularDistancia(temp) + EPS) * temp.getCoordY();
         }
         return new Pair<>(x,y);
     }
@@ -143,44 +170,5 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnFingerprint = (Button) findViewById(R.id.button2);
         btnFingerprint.setVisibility(View.INVISIBLE);
-    }
-
-    public void melhorarLocalizacao(View v) {
-        TextView txtLocalKNN = (TextView) findViewById(R.id.textView2);
-        TextView txtLocalKWNN = (TextView) findViewById(R.id.textView);
-
-        EditText localCorretoX = (EditText) findViewById(R.id.editText);
-        EditText localCorretoY = (EditText) findViewById(R.id.editText2);
-
-        String []localKNN = txtLocalKNN.getText().toString().split("[(),]");
-        String []localKWNN = txtLocalKWNN.getText().toString().split("[(),]");
-
-        try {
-            double xKNN = Double.valueOf(localKNN[1]);
-            double yKNN = Double.valueOf(localKNN[2]);
-
-            double xKWNN = Double.valueOf(localKWNN[1]);
-            double yKWNN = Double.valueOf(localKWNN[2]);
-
-            double xCorreto = Double.valueOf(localCorretoX.getText().toString());
-            double yCorreto = Double.valueOf(localCorretoY.getText().toString());
-
-
-            this.qtdLocais++;
-            this.erroAcumuladoKNN += Math.abs(xKNN - xCorreto) + Math.abs(yKNN - yCorreto);
-            this.erroAcumuladoKWNN += Math.abs(xKWNN - xCorreto) + Math.abs(yKWNN - yCorreto);
-
-            TextView txtMsgKNN = (TextView) findViewById(R.id.textView6);
-            TextView txtMsgKWNN = (TextView) findViewById(R.id.textView5);
-
-
-            String msgKNN = "Erro médio KNN: " + decimalFormat.format(erroAcumuladoKNN/(double)qtdLocais) + " m";
-            String msgKWNN = "Erro médio KWNN: " + decimalFormat.format(erroAcumuladoKWNN/(double)qtdLocais) + " m";
-
-            txtMsgKNN.setText(msgKNN);
-            txtMsgKWNN.setText(msgKWNN);
-        } catch (Exception e)   {
-            Toast.makeText(getApplicationContext(), "Preencha corretamente as coordenadas", Toast.LENGTH_SHORT).show();
-        }
     }
 }

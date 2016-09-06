@@ -27,10 +27,6 @@ public class Local {
         return coordY;
     }
 
-    public double getDistancia() {
-        return distancia;
-    }
-
     public Map<String, Double> getAps() {
         return aps;
     }
@@ -51,21 +47,14 @@ public class Local {
         Map<String, Double> fpAps = l.getAps();
         double distancia = 0.;
 
-        for(String s : fpAps.keySet())
-            if (aps.containsKey(s))
-                distancia += Math.pow((double) (fpAps.get(s) - aps.get(s)), 2.0);
-
-        fpAps.keySet().removeAll(aps.keySet());
-
-        for(String s : fpAps.keySet())
-            distancia += Math.pow(-127.0 - (double)fpAps.get(s), 2.0);
-
-        Set<String> temp = new HashSet<>(aps.keySet());
-
-        temp.removeAll(fpAps.keySet());
-
-        for(String s : temp)
-            distancia += Math.pow(-127.0 - (double)aps.get(s), 2.0);
+        for(String s : MainActivity.strAps) {
+            if (aps.containsKey(s) && fpAps.containsKey(s))
+                distancia += Math.pow(fpAps.get(s) - aps.get(s), 2.0);
+            else if(aps.containsKey(s))
+                distancia += Math.pow(-127.0 - aps.get(s), 2.0);
+            else if(fpAps.containsKey(s))
+                distancia += Math.pow(-127.0 - fpAps.get(s), 2.0);
+        }
 
         this.distancia = Math.sqrt(distancia);
         return this.distancia;

@@ -13,14 +13,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by Rafael on 20/08/2016.
  */
-public class Conexao extends AsyncTask<String, Void, String> {
-
-    private StringBuilder msg;
+public class Conexao extends AsyncTask<String, Integer, String> {
     private Context mContext;
     private List<Local> localList;
 
@@ -33,7 +32,7 @@ public class Conexao extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... params) {
         URL url;
         HttpURLConnection httpURLConnection;
-        msg = new StringBuilder();
+        StringBuilder msg = new StringBuilder();
 
         try {
             url = new URL(params[0]);
@@ -49,19 +48,18 @@ public class Conexao extends AsyncTask<String, Void, String> {
 
             bufferedReader.close();
             httpURLConnection.disconnect();
-        } catch(Exception e)   {
+        } catch(Exception e) {
             msg.append("Error: ");
             msg.append(e.getMessage());
             msg.append("\nClass: ");
             msg.append(e.getClass());
         }
 
-        return msg.toString();
-    }
+        String s = msg.toString();
 
-    @Override
-    protected void onPostExecute(String s) {
-        msg = new StringBuilder();
+        if(s.contains("Error"))
+            return s;
+
         try {
             JSONObject json = new JSONObject(s);
             JSONArray jsonArray = json.getJSONArray("data");
@@ -76,17 +74,21 @@ public class Conexao extends AsyncTask<String, Void, String> {
 
                 JSONObject aps = coord.getJSONObject("ap");
 
-                while (aps.length() > 0) {
-                    String name = aps.keys().next();
-                    l.addAp(name, aps.getDouble(name));
+                for(String strAp : MainActivity.strAps)
+                    if(aps.has(strAp))
+                        l.addAp(strAp, aps.getDouble(strAp));
 
-                    aps.remove(name);
-                }
                 localList.add(l);
             }
         } catch(Exception e)    {
-            Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
+            msg.append('\n');
+            msg.append("Error in JSON Object");
         }
-        Toast.makeText(mContext, "Sincronização finalizada!", Toast.LENGTH_SHORT).show();
+        return msg.toString();
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        Toast.makeText(mContext, (s.contains("Error")? s :"Sincronização finalizada!"), Toast.LENGTH_SHORT).show();
     }
 }
