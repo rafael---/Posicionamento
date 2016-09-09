@@ -51,9 +51,9 @@ public class Local {
             if (aps.containsKey(s) && fpAps.containsKey(s))
                 distancia += Math.pow(fpAps.get(s) - aps.get(s), 2.0);
             else if(aps.containsKey(s))
-                distancia += Math.pow(-127.0 - aps.get(s), 2.0);
+                distancia += Math.pow(MainActivity.RSSI_NA - aps.get(s), 2.0);
             else if(fpAps.containsKey(s))
-                distancia += Math.pow(-127.0 - fpAps.get(s), 2.0);
+                distancia += Math.pow(MainActivity.RSSI_NA - fpAps.get(s), 2.0);
         }
 
         this.distancia = Math.sqrt(distancia);

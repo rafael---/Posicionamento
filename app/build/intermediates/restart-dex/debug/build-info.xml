@@ -4,41 +4,26 @@
     api-level="23"
     density="xhdpi"
     format="7"
-    timestamp="34555579757819"
+    timestamp="15055383071385"
     token="-9032569181926328597" >
 
     <task
         name="javac"
-        duration="93" />
+        duration="613" />
     <task
         name="instant-run-dex"
         duration="0" />
     <task
         name="instant-run-transform"
-        duration="10" />
+        duration="65" />
     <task
         name="verifier"
-        duration="1" />
+        duration="37" />
 
     <artifact
-        location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_2/classes.dex"
-        type="DEX" />
+        location="/home/rafael/Documentos/Posicionamento/app/build/outputs/apk/app-debug.apk"
+        type="MAIN" />
 
-    <build timestamp="33890645727370" >
-        <artifact
-            location="/home/rafael/Documentos/Posicionamento/app/build/outputs/apk/app-debug.apk"
-            type="MAIN" />
-    </build>
-    <build timestamp="34127629514663" >
-        <artifact
-            location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_4/classes.dex"
-            type="DEX" />
-    </build>
-    <build timestamp="34499335437321" >
-        <artifact
-            location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/res/resources-debug.ap_"
-            type="RESOURCES" />
-    </build>
     <build timestamp="34555579757819" >
         <artifact
             location="/home/rafael/Documentos/Posicionamento/app/build/intermediates/transforms/dex/debug/folders/1000/5/slice_2/classes.dex"

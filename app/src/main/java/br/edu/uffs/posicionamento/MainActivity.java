@@ -7,14 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,14 +22,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     public final static String[] strAps = {"44:ad:d9:e5:36:d0", "0c:27:24:8e:bb:40", "44:ad:d9:e5:5f:40"};
+    public final static int RSSI_NA = -95;
 
     private List<Local> locais;
 
     private Conexao conexao;
-    private Spinner dropdown;
     DecimalFormat decimalFormat;
 
     @Override
@@ -101,6 +99,15 @@ public class MainActivity extends AppCompatActivity {
                     float cy = Float.valueOf(localCorretoY.getText().toString());
                     json.put("correct_x", cx);
                     json.put("correct_y", cy);
+
+                    Map<String, Double> aps = l.getAps();
+                    for(int i = 0, len = strAps.length; i < len; i++)   {
+                        String apName = String.format(Locale.ENGLISH, "ap%d",i+1);
+                        if(aps.containsKey(strAps[i]))
+                            json.put(apName, aps.get(strAps[i]));
+                        else
+                            json.put(apName, RSSI_NA);
+                    }
                 } catch(NumberFormatException ignored)    {}
 
                 strSync += "$" + json.toString();
