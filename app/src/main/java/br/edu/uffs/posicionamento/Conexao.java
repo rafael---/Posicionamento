@@ -16,6 +16,8 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+
 /**
  * Created by Rafael on 20/08/2016.
  */
@@ -31,14 +33,14 @@ public class Conexao extends AsyncTask<String, Integer, String> {
     @Override
     protected String doInBackground(String... params) {
         URL url;
-        HttpURLConnection httpURLConnection;
+        HttpsURLConnection httpsURLConnection;
         StringBuilder msg = new StringBuilder();
 
         try {
             url = new URL(params[0]);
-            httpURLConnection = (HttpURLConnection) url.openConnection();
+            httpsURLConnection = (HttpsURLConnection) url.openConnection();
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream()));
 
             String serverMsg;
 
@@ -47,7 +49,7 @@ public class Conexao extends AsyncTask<String, Integer, String> {
             }
 
             bufferedReader.close();
-            httpURLConnection.disconnect();
+            httpsURLConnection.disconnect();
         } catch(Exception e) {
             msg.append("Error: ");
             msg.append(e.getMessage());

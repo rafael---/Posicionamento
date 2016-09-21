@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     public final static String[] strAps = {"44:ad:d9:e5:36:d0", "0c:27:24:8e:bb:40", "44:ad:d9:e5:5f:40"};
     public final static int RSSI_NA = -95;
 
+    public final static String BASE_URL = "https://rafaelhribeiro-com.umbler.net/";
+
     private List<Local> locais;
 
     private Conexao conexao;
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     json.put("correct_x", cx);
                     json.put("correct_y", cy);
 
-                    Map<String, Double> aps = l.getAps();
+                    Map<String, Double> aps = localAtual.getAps();
                     for(int i = 0, len = strAps.length; i < len; i++)   {
                         String apName = String.format(Locale.ENGLISH, "ap%d",i+1);
                         if(aps.containsKey(strAps[i]))
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             Sincronizacao sincronizacao = new Sincronizacao(getApplicationContext());
-            sincronizacao.execute("http://dadosuffscco.site88.net/sync_measures.php",strSync);
+            sincronizacao.execute(BASE_URL+"sync_measures.php",strSync);
         } catch (NullPointerException e)    {
             Toast.makeText(getApplicationContext(),"Objeto Nulo",Toast.LENGTH_LONG).show();
         }
@@ -173,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         locais = new ArrayList<>();
 
         conexao = new Conexao(getApplicationContext(), locais);
-        conexao.execute("http://dadosuffscco.site88.net/list_local.php");
+        conexao.execute(BASE_URL+"list_local.php");
 
         Button btnFingerprint = (Button) findViewById(R.id.button2);
         btnFingerprint.setVisibility(View.INVISIBLE);
